@@ -43,7 +43,23 @@ bool inpData_odm::readNew_odm( void )
 }
 int inpData_odm::calcOdometory( void )
 {
-	// Programming on your own.
+  // K = r * (2*pi)/(CRev*Gear);
+  const double K = 0.14457758 * ((2*M_PI)/(400*150));
+  static double old_time = 0;
+
+  double dt = time - old_time;
+  old_time = time;
+
+  double v[2] = {0};
+  v[_L] = ( K * counter[_L] ) / dt;
+  v[_R] = ( K * counter[_R] ) / dt;
+  
+  vel = (v[_R] + v[_L]) / 2.0;
+  angvel = (v[_R] - v[_L]) / -0.3045;
+
+  pos[_X] += (cos(pos[ _YAW ]) * vel * dt);
+  pos[_Y] += (sin(pos[ _YAW ]) * vel * dt);
+  pos[_YAW] += (angvel * dt);
 		
 	return EXIT_SUCCESS;
 }
