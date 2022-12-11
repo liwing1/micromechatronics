@@ -61,10 +61,30 @@ public:
 	{
 		// Programming on your own.
 	}
-	void localizer( void )
+	void localizer( double time, double *a_sens, double *w_sens )
 	{
-		// Programming on your own.
-	}
+		static double old_theta[3] = {0};
+		static double old_time = 0;
+
+		double g_phi = atan(a_sens[_Y]/a_sens[_Z]);
+		double g_theta = atan(a_sens[_X]/sqrt( pow(a_sens[_Y], 2) + pow(a_sens[_Z], 2) ));
+
+		double g_w[3]; //phi_dot, theta_dot, psi_dot
+		g_w[_ROLL] = w_sens[_X] + sin(g_phi)*tan(g_theta)*w_sens[_X] + cos(g_phi)*tan(g_theta)*w_sens[_Z];
+		g_w[_PITCH] = cos(g_phi)*w_sens[_Y] - sin(g_phi)*w_sens[_Z];
+		g_w[_YAW] = (sin(g_phi)/cos(g_theta))*w_sens[_Y] + (cos(g_phi)/cos(g_theta))*w_sens[_Z];
+
+		double dt = time - old_time;
+		theta[_ROLL] = old_theta[_ROLL] + g_w[_ROLL] * dt;
+		theta[_PITCH] = old_theta[_PITCH] + g_w[_PITCH] * dt;
+		theta[_YAW] = old_theta[_YAW] + g_w[_YAW] * dt;
+
+		old_time = time;
+		for(uint8_t i = 0; i < 3; i++)
+		{
+			old_theta[i] = theta[i];
+		}
+	}	
 };
 
 static int gShutOff = 0;
@@ -115,7 +135,7 @@ int main( int aArgc, char *aArgv[ ] )
 			}
 #else
 #endif
-//			local.localizer( );
+			local.localizer( time, accel, angvel );
 //			pos = local.getPos( );
 
 #ifdef DRAW
