@@ -16,17 +16,23 @@ private:
 	double time;
 	double angvel[ 3 ];
 	double accel[ 3 ];
+	double theta[ 3 ];
+	int calcIMU( void );
 //	double mag[ 3 ];
 //	double temperature;
 
 public:
-	inpData_imu( void ) { }
+	inpData_imu( void ) 
+	{ 
+		theta[ 0 ] = 0; theta[ 1 ] = 0; theta[ 2 ] = 0;
+	}
 	~inpData_imu( void ) { }
 
 	bool readNew_imu( void );
 	double getTime( void ){ return time; }
 	double* getAngvel( void ){ return angvel; }
 	double* getAccel( void ){ return accel; }
+	double* getTheta( void ){ return theta; }
 
 };
 
