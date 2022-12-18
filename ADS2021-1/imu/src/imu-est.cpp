@@ -63,26 +63,32 @@ public:
 	}
 	void localizer( double time, double *a_sens, double *w_sens )
 	{
-		static double old_theta[3] = {0};
+		const double K = 0.999;
 		static double old_time = 0;
+		static double theta_gyro[3] = {0};
+		double theta_accel[3] = {0};
+		double g_angvel[3] = {0};
 
-		double g_phi = atan(a_sens[_Y]/a_sens[_Z]);
-		double g_theta = atan(a_sens[_X]/sqrt( pow(a_sens[_Y], 2) + pow(a_sens[_Z], 2) ));
+		theta_accel[_ROLL] = atan(accel[_Y]/accel[_Z]);
+		theta_accel[_PITCH] = atan(accel[_Y]/sqrt(pow(accel[_X], 2) + pow(accel[_Z], 2)));
 
-		double g_w[3]; //phi_dot, theta_dot, psi_dot
-		g_w[_ROLL] = w_sens[_X] + sin(g_phi)*tan(g_theta)*w_sens[_X] + cos(g_phi)*tan(g_theta)*w_sens[_Z];
-		g_w[_PITCH] = cos(g_phi)*w_sens[_Y] - sin(g_phi)*w_sens[_Z];
-		g_w[_YAW] = (sin(g_phi)/cos(g_theta))*w_sens[_Y] + (cos(g_phi)/cos(g_theta))*w_sens[_Z];
+		g_angvel[_ROLL] = 	angvel[_X] + 
+							angvel[_Y] * sin(theta_gyro[_ROLL]) * tan(theta_gyro[_PITCH]) +
+							angvel[_Z] * cos(theta_gyro[_ROLL]) * tan(theta_gyro[_PITCH]) ;
+		g_angvel[_PITCH] =	angvel[_Y] * cos(theta_gyro[_ROLL]) -
+							angvel[_Z] * sin(theta_gyro[_ROLL]);
+		g_angvel[_YAW] = 	angvel[_Y] * (sin(theta_gyro[_ROLL])/cos(theta_gyro[_PITCH])) +
+							angvel[_Z] * (cos(theta_gyro[_ROLL])/cos(theta_gyro[_PITCH]));
 
 		double dt = time - old_time;
-		theta[_ROLL] = old_theta[_ROLL] + g_w[_ROLL] * dt;
-		theta[_PITCH] = old_theta[_PITCH] + g_w[_PITCH] * dt;
-		theta[_YAW] = old_theta[_YAW] + g_w[_YAW] * dt;
-
 		old_time = time;
-		for(uint8_t i = 0; i < 3; i++)
-		{
-			old_theta[i] = theta[i];
+
+		for(uint8_t i = 0; i < 3; i++){
+			theta_gyro[i] += g_angvel[i] * dt;
+		}
+
+		for(uint8_t i = 0; i < 3; i++){
+			theta[i] = theta_accel[i] + K*(theta_gyro[i] - theta_accel[i]);
 		}
 	}	
 };
