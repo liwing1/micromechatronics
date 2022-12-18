@@ -32,7 +32,7 @@ public:
 	double getTime( void ){ return time; }
 	double* getAngvel( void ){ return angvel; }
 	double* getAccel( void ){ return accel; }
-	double* getTheta( void ){ return theta; }
+	double* getTheta( void ){ calcIMU();return theta; }
 
 };
 

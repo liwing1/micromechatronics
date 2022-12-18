@@ -41,7 +41,7 @@ bool inpData_imu::readNew_imu( void )
 		double a = atof( getWord( fp_base ) );
 	}
 
-	calcIMU();
+	// calcIMU();
 	
 	return true;
 }

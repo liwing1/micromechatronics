@@ -28,7 +28,7 @@ public:
 	double getTime( void ){ return time; }
 	double getAngvel( void ){ return angvel; }
 	double getVel( void ){ return vel; }
-	double* getPos( void ){ return pos; }
+	double* getPos( void ){ calcOdometory();return pos; }
 
 };
 
