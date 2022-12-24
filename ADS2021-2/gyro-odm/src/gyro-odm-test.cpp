@@ -42,7 +42,7 @@ int main( int aArgc, char *aArgv[ ] )
 		inpData_imu imu_fs;
 		imu_fs.initialize( "../data/log_imu.dat", "r" );
 		double time_odm = 0, time_imu = 0, dt;
-		double angvel = 0, vel = 0, *pos, *theta;
+		double angvel = 0, vel = 0, pos[ 3 ] = { 0.0 };
 		unsigned long cnt = 0;
 		
 		bool flag_update = false;
@@ -50,6 +50,7 @@ int main( int aArgc, char *aArgv[ ] )
 
 			if( !odm_gl.readNew_odm( ) ) break;
 			time_odm = odm_gl.getTime( );
+//			pos = odm_gl.getPos( ); 
 			cnt++;
 			double dt = time_imu - time_odm;
 			if( fabs( dt ) < 0.005 ){
@@ -67,10 +68,7 @@ int main( int aArgc, char *aArgv[ ] )
 				flag_update = false;
 
 		// Programming on your own.		
-				pos = odm_gl.getPos( ); 
-				theta = imu_fs.getTheta( );
-				pos[_YAW] = theta[_YAW];
-
+				
 				printf( "time_odm=%f, time_imu=%f, dt=%f, cnt=%ld\n", time_odm, time_imu, dt, cnt );
 				cnt = 0;
 			}

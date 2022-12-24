@@ -37,7 +37,7 @@ bool inpData_odm::readNew_odm( void )
 	double tmp = atof( getWord( fp_base ) );
 	tmp = atof( getWord( fp_base ) );
 	// Estimate a position
-	// calcOdometory( );
+	calcOdometory( );
 	
 	return true;
 }
