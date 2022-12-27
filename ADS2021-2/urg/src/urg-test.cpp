@@ -8,6 +8,7 @@
 #include <math.h>
 #include <unistd.h>
 #include "inpData_urg.hpp"
+#include <fstream>
 
 #define DRAW
 
@@ -25,6 +26,7 @@ static unsigned int dT = 10;
 
 int main( int aArgc, char *aArgv[ ] )
 {
+	ofstream MyFile("data.csv");
 
 	try {
 		setSigInt( );
@@ -50,6 +52,12 @@ int main( int aArgc, char *aArgv[ ] )
 			y = urg_fs.getY( );
 			
 			// Programming on your own.
+			int idx = 270.0 * (360.0 / size);
+			double yv = y[idx];
+
+			char buffer[100] = {0};
+			sprintf(buffer, "%f %f\r\n", urg_fs.getTime(), yv);
+			MyFile << buffer;
 			
 #ifdef DRAW
 			gdrawer.setURG( x, y, size );
