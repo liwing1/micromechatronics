@@ -8,6 +8,7 @@
 #include <math.h>
 #include <unistd.h>
 #include "inpData_urg.hpp"
+#include <fstream>
 
 #define DRAW
 
@@ -48,22 +49,23 @@ public:
 	{
 		// Calculate Least-square method
 		double A = 0, B = 0, xd = 0, yd = 0;
-		double sum_x = 0, sum_y = 0, sum_xy = 0, sum_xx = 0;
+		double Ex = 0, Ey = 0, Exy = 0, Exx = 0;
 
-		for(int i = 0; i < size; i++)
+		for(unsigned int i = 0; i < size; i++)
 		{
-			sum_x += tx[i];
-			sum_y += ty[i];
-			sum_xy += tx[i] * ty[i];
-			sum_xx += tx[i] * tx[i];
+			Ex += tx[i];
+			Ey += ty[i];
+			Exy += tx[i] * ty[i];
+			Exx += tx[i] * tx[i];
 		}
 
-		A = ((size * sum_xy)-(sum_x * sum_y))/((size * sum_xx)-(sum_x * sum_x));
-		B = ((sum_xx * sum_y)-(sum_xy * sum_x))/((size * sum_xx)-(sum_x * sum_x));
-		// y = A x + B
+		A = ((size * Exy)-(Ex * Ey))/((size * Exx)-(Ex * Ex));
+		B = ((Exx * Ey)-(Exy * Ex))/((size * Exx)-(Ex * Ex));
+		// y = A x + BS
 
-		xd = (-A * B)/((A * A) + 1);
-		yd = (-B)/((A*A)+1);
+		xd = (-A * B)/(pow(A, 2) + 1);
+		yd = (B)/(pow(A, 2) + 1);
+
 		distance = sqrt( xd*xd + yd*yd );
 		angle = atan( A );
 	}
@@ -71,6 +73,7 @@ public:
 
 int main( int aArgc, char *aArgv[ ] )
 {
+	ofstream MyFile("data.csv");
 
 	try {
 		setSigInt( );
@@ -112,7 +115,10 @@ int main( int aArgc, char *aArgv[ ] )
 #else
 #endif			
 //			printf( "%d\n", size );
-			printf( "%f %f %f\n", time, angle, distance );
+			printf("size: %u\n", size);
+			char buf[100] = {0};
+			sprintf( buf, "%f %f %f\n", time, angle, distance );
+			MyFile << buf;
 			
 		}
 	}
