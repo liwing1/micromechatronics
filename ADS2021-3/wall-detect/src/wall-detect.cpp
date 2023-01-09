@@ -47,10 +47,25 @@ public:
 	void detect( void )
 	{
 		// Calculate Least-square method
-		
+		double A = 0, B = 0, xd = 0, yd = 0;
+		double sum_x = 0, sum_y = 0, sum_xy = 0, sum_xx = 0;
+
+		for(int i = 0; i < size; i++)
+		{
+			sum_x += tx[i];
+			sum_y += ty[i];
+			sum_xy += tx[i] * ty[i];
+			sum_xx += tx[i] * tx[i];
+		}
+
+		A = ((size * sum_xy)-(sum_x * sum_y))/((size * sum_xx)-(sum_x * sum_x));
+		B = ((sum_xx * sum_y)-(sum_xy * sum_x))/((size * sum_xx)-(sum_x * sum_x));
 		// y = A x + B
-//		distance = sqrt( xd*xd + yd*yd );
-//		angle = atan( A );
+
+		xd = (-A * B)/((A * A) + 1);
+		yd = (-B)/((A*A)+1);
+		distance = sqrt( xd*xd + yd*yd );
+		angle = atan( A );
 	}
 };
 
