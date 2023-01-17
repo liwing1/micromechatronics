@@ -13,6 +13,7 @@
 #include "inpData_odm.hpp"
 #include "inpData_urg.hpp"
 #include "ioMap.hpp"
+#include <random>
 
 #define DRAW
 
@@ -66,22 +67,88 @@ public:
 	void initialParticles( void )
 	{
 	// Programming on your own
+	double std[3] = {0.5, 0.5, 0.5}; // Standard Deviation
+
+	//Set up generator for drawing particle initial states from normal distributionss
+	default_random_engine gen;
+	normal_distribution<double> dist_x(pos[_X], std[0]);
+	normal_distribution<double> dist_y(pos[_Y], std[1]);
+	normal_distribution<double> dist_theta(pos[_YAW], std[2]);
+
+	//Initialize all the particle positions and weights
+	for(int i = 0; i<PARTICLE_SIZE; ++i){
+		particle[i][_X] = dist_x(gen);
+		particle[i][_Y] = dist_y(gen);
+		particle[i][_YAW] = dist_theta(gen);
+		weight[i] = 1.;
+
+		particle_copy[i][_X] = particle[i][_X];
+		particle_copy[i][_Y] = particle[i][_Y];
+		particle_copy[i][_YAW] = particle[i][_YAW];
+	}
+
+	//Set initialized to true
+	flag_first_loop = false;
+
+	cout<<"Initialized particle filter with";
+
 	}
 	void prediction( void )
 	{
 // Programming on your own
+		//Calculate mean (x,y,theta) using exact motion models
+		for(int i = 0; i<PARTICLE_SIZE; ++i){
+			particle[i][_X] += vt * cos(particle[i][_YAW]) * dt;
+			particle[i][_Y] += vt * sin(particle[i][_YAW]) * dt;
+			particle[i][_YAW] += wt * dt;
+		}
 	}
 	void likelihood( void )
 	{
 // Programming on your own
+		double summation = 0;
+
+		for(int i = 0; i<PARTICLE_SIZE; ++i){
+			weight[i] = sqrt(pow(pos[_X], 2) + pow(pos[_Y],2));
+		}
+
+		for(int i = 0; i<PARTICLE_SIZE; ++i){
+			summation += weight[i];
+		}
+
+		for(int i = 0; i<PARTICLE_SIZE; ++i){
+			weight[i] /= summation;
+		}
 	}
 	void update( void )
 	{
 // Programming on your own
+		pos[_X] = 0;
+		pos[_Y] = 0;
+		pos[_YAW] = 0;
+
+		for(int i = 0; i<PARTICLE_SIZE; ++i){
+			pos[_X] += weight[i] * particle[i][_X];
+			pos[_Y] += weight[i] * particle[i][_Y];
+			pos[_YAW] += weight[i] * particle[i][_YAW];
+		}
 	}
 	void resampling( void )
 	{
-// Programming on your own
+		default_random_engine gen;
+		double std[3] = {0.5, 0.5, 0.5}; // Standard Deviation
+
+		//Setup the normal distributions using the std dev of the position (x,y,theta)
+		for(int i = 0; i<PARTICLE_SIZE; ++i){
+			normal_distribution<double> norm_x(pos[_X], std[_X]);
+			normal_distribution<double> norm_y(pos[_Y], std[_Y]);
+			normal_distribution<double> norm_theta(pos[_YAW], std[_YAW]);
+
+			//Draw uncertain positions from the distributions to get a noisy state
+			particle[i][_X] = norm_x(gen);
+			particle[i][_Y] = norm_y(gen);
+			particle[i][_YAW] = norm_theta(gen);
+		}
 	}
 	void setPCD( double *x, double *y, int s )
 	{
