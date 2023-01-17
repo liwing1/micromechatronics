@@ -14,6 +14,7 @@
 #include "inpData_urg.hpp"
 #include "ioMap.hpp"
 #include <random>
+#include <fstream>
 
 #define DRAW
 
@@ -76,7 +77,7 @@ public:
 	normal_distribution<double> dist_theta(pos[_YAW], std[2]);
 
 	//Initialize all the particle positions and weights
-	for(int i = 0; i<PARTICLE_SIZE; ++i){
+	for(int i = 0; i<PARTICLE_SIZE; i++){
 		particle[i][_X] = dist_x(gen);
 		particle[i][_Y] = dist_y(gen);
 		particle[i][_YAW] = dist_theta(gen);
@@ -97,7 +98,7 @@ public:
 	{
 // Programming on your own
 		//Calculate mean (x,y,theta) using exact motion models
-		for(int i = 0; i<PARTICLE_SIZE; ++i){
+		for(int i = 0; i<PARTICLE_SIZE; i++){
 			particle[i][_X] += vt * cos(particle[i][_YAW]) * dt;
 			particle[i][_Y] += vt * sin(particle[i][_YAW]) * dt;
 			particle[i][_YAW] += wt * dt;
@@ -108,15 +109,15 @@ public:
 // Programming on your own
 		double summation = 0;
 
-		for(int i = 0; i<PARTICLE_SIZE; ++i){
-			weight[i] = sqrt(pow(pos[_X], 2) + pow(pos[_Y],2));
+		for(int i = 0; i<PARTICLE_SIZE; i++){
+			// weight[i] = L(particle[i], urg_tx, urg_ty, urg_size);
 		}
 
-		for(int i = 0; i<PARTICLE_SIZE; ++i){
+		for(int i = 0; i<PARTICLE_SIZE; i++){
 			summation += weight[i];
 		}
 
-		for(int i = 0; i<PARTICLE_SIZE; ++i){
+		for(int i = 0; i<PARTICLE_SIZE; i++){
 			weight[i] /= summation;
 		}
 	}
@@ -127,7 +128,7 @@ public:
 		pos[_Y] = 0;
 		pos[_YAW] = 0;
 
-		for(int i = 0; i<PARTICLE_SIZE; ++i){
+		for(int i = 0; i<PARTICLE_SIZE; i++){
 			pos[_X] += weight[i] * particle[i][_X];
 			pos[_Y] += weight[i] * particle[i][_Y];
 			pos[_YAW] += weight[i] * particle[i][_YAW];
@@ -139,7 +140,7 @@ public:
 		double std[3] = {0.5, 0.5, 0.5}; // Standard Deviation
 
 		//Setup the normal distributions using the std dev of the position (x,y,theta)
-		for(int i = 0; i<PARTICLE_SIZE; ++i){
+		for(int i = 0; i<PARTICLE_SIZE; i++){
 			normal_distribution<double> norm_x(pos[_X], std[_X]);
 			normal_distribution<double> norm_y(pos[_Y], std[_Y]);
 			normal_distribution<double> norm_theta(pos[_YAW], std[_YAW]);
@@ -186,6 +187,7 @@ public:
 static void chkKeyHit( void );
 int main( int aArgc, char *aArgv[ ] )
 {
+	ofstream MyFile("data.csv");
 	try {
 		setSigInt( );
 
@@ -245,6 +247,11 @@ int main( int aArgc, char *aArgv[ ] )
 
 #ifdef DRAW
 				pos = pf_gl.getPos( );
+
+				char buff[100] = {0};
+				sprintf(buff, "%f %f %f %f\r\n", pos[_X], pos[_Y], pos[_YAW], odm_gl.getTime( ));
+				MyFile<<buff;
+
 				gdrawer.setODM( pos );
 				gdrawer.setURG( urg_fs.getX( ), urg_fs.getY( ), urg_fs.getSize( ), pos );
 				gdrawer.setPF( pf_gl.getParticleX( ), pf_gl.getParticleY( ), PARTICLE_SIZE );
